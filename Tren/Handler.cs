@@ -16,7 +16,8 @@ namespace Tren
         public double acamarasave, dcamara; //Guarda el ultimo angulo de la camara ** incremento de angulo que he movido
         public int mouseY;
         public double trayectoria;
-        public float TrenX, TrenY, AnguloTan, TrenA;
+        public float TrenX, TrenY, TrenA, AnguloTan;
+        public double PendienteTan;
         public int  Elipsea, Elipseb;
 
         public Handler()
@@ -25,9 +26,68 @@ namespace Tren
             acamara = 0 * Math.PI / 180; //Lo convierte a radianes
             dcamara = 0;
             trayectoria = 0 * Math.PI / 180;
-            TrenX = TrenY = AnguloTan =TrenA = 0.0f;
+            TrenX = TrenY = TrenA = AnguloTan = 0.0f;
+            PendienteTan = 0;
             Elipsea = 8;
             Elipseb = 6;
+        }
+
+        public void dibuja_arbol(GL gl)
+        {
+            IntPtr qobj = gl.gluNewQuadric();
+            gl.gluQuadricDrawStyle(qobj, GL.GLU_FILL);
+            //Material tronco
+            float[] sombra_tronco = { 0.588f, 0.2275f, 0.004f, 1.0f };
+            float[] luz_tronco = { 0.643f, 0.353f, 0.016f, 1.0f };
+            float[] reflejo = { 1.0f, 1.0f, 1.0f, 1.0f };//Blaco
+            float[] brillo = { 0.0f, 0.0f, 0.0f, 1.0f };//Negro
+            float intensidadbrillo = 40.0f;//0 - 128
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT, sombra_tronco); //color a la sombra
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_DIFFUSE, luz_tronco); //color a la luz
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_SPECULAR, reflejo); //color del reflejo
+            gl.glMaterialf(GL.GL_FRONT, GL.GL_SHININESS, intensidadbrillo); //intensidad del reflejo
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_EMISSION, brillo);
+            //Tronco
+            gl.gluCylinder(qobj, 0.5, 0.5, 0.25, 10, 10);
+            //Capa uno del arbol
+            float[] sombra_arbol = { 0.118f, 0.353f, 0.003f };
+            float[] luz_arbol = { 0.169f, 0.518f, 0.008f };
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT, sombra_arbol); //color a la sombra
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_DIFFUSE, luz_arbol); //color a la luz
+            gl.glTranslatef(0.0f, 0.0f, 0.25f);
+            gl.gluCylinder(qobj, 1.2 , 0.9, 0.6, 10, 10);
+            gl.glTranslatef(0.0f, 0.0f, 0.6f);
+            gl.gluCylinder(qobj, 1.2, 0.6, 0.6, 10, 10);
+            gl.glTranslatef(0.0f, 0.0f, 0.6f);
+            gl.gluCylinder(qobj, 0.9, 0.3, 0.6, 10, 10);
+            gl.glTranslatef(0.0f, 0.0f, 0.6f);
+            gl.gluCylinder(qobj, 0.6, 0.0, 0.5, 10, 10);
+        }
+
+        public void dibuja_cuadrado(GL gl, float sizecuadro)
+        {
+            gl.glBegin(GL.GL_QUADS);
+            gl.glVertex3f(0.0f, 0.0f, 0.0f);
+            gl.glVertex3f(0.0f, -sizecuadro, 0.0f);
+            gl.glVertex3f(sizecuadro, sizecuadro, 0.0f);
+            gl.glVertex3f(sizecuadro, 0.0f, 0.0f);
+            gl.glEnd();
+        }
+
+        public void dibuja_plano(GL gl, float sizeplano, float sizecuadro)
+        {
+            gl.glTranslatef(-sizeplano, -sizeplano, 0.0f);
+            for (float j = 0; j < sizeplano / sizecuadro; j = j+sizecuadro)
+            {
+                gl.glTranslatef(0.0f, j, 0.0f);
+                gl.glPushMatrix();
+                for (float i = 0; i < (sizeplano / sizecuadro); i = i+sizecuadro)
+                {
+                    gl.glTranslatef(i, 0.0f, 0.0f);
+                    dibuja_cuadrado(gl, 0.1f);
+                    gl.glPopMatrix();
+                }
+            }
         }
 
         public void OpenGLStarted(CSGL12Control csgl12Control) //Metodo OpenGLStartes
@@ -47,7 +107,7 @@ namespace Tren
             gl.glEnable(GL.GL_LIGHT1);//Luz tren
             gl.glEnable(GL.GL_NORMALIZE);
             //Modelo de iluminación
-            float[] lmKa = { 0.2f, 0.2f, 0.2f, 0.1f }; //intensidad luz ambiental (0.2, 0.2, 0.2, 1) default
+            float[] lmKa = { 0.8f, 0.8f, 0.8f, 0.1f }; //intensidad luz ambiental (0.2, 0.2, 0.2, 1) default
             gl.glLightModelfv(GL.GL_LIGHT_MODEL_AMBIENT, lmKa); //definir luz ambiental
             gl.glLightModeli(GL.GL_LIGHT_MODEL_LOCAL_VIEWER, GL.GL_TRUE); //luz local o infinita
             gl.glLightModeli(GL.GL_LIGHT_MODEL_TWO_SIDE, GL.GL_TRUE); //iluminar una o dos caras
@@ -138,9 +198,18 @@ namespace Tren
             gl.glMaterialfv(GL.GL_FRONT, GL.GL_EMISSION, brillotren); //color de luz emitida
             TrenX = (float)(Elipsea*Math.Cos(trayectoria));
             TrenY = (float)(Elipseb*Math.Sin(trayectoria));
-            AnguloTan = (float)(Math.Atan((Elipseb*TrenX)/(Elipsea*(Math.Sqrt(Math.Pow(Elipsea,2)-Math.Pow(TrenX,2))))));
-            gl.glRotatef(TrenA, 0.0f, 0.0f, 1.0f);
+            PendienteTan = ((Elipseb*TrenX)/(Elipsea*(Math.Sqrt(Math.Pow(Elipsea,2)-Math.Pow(TrenX,2)))));
+            AnguloTan = (float)(Math.Abs((Math.Atan(PendienteTan)))*(180/Math.PI));
             gl.glTranslatef(TrenX, TrenY, 0.0f);
+            if (TrenX > 0 && TrenY > 0)
+                TrenA = (180 - AnguloTan);
+            else if (TrenX < 0 && TrenY > 0)
+                TrenA = (180 + AnguloTan);
+            else if (TrenX < 0 && TrenY < 0)
+                TrenA = (AnguloTan * (-1));
+            else if (TrenX > 0 && TrenY < 0)
+                TrenA = AnguloTan;
+            gl.glRotatef(TrenA, 0.0f, 0.0f, 1.0f);
             gl.glScalef(2.0f, 1.0f, 1.0f);
             GLUTShapes shape = new GLUTShapes(gl);
             shape.glutSolidCube(1);
@@ -156,15 +225,35 @@ namespace Tren
             gl.glLightfv(GL.GL_LIGHT1, GL.GL_SPECULAR, light_Ks); //color del brillo
             gl.glLightf(GL.GL_LIGHT1, GL.GL_SPOT_CUTOFF, 20.0f);
             gl.glLightfv(GL.GL_LIGHT1, GL.GL_SPOT_DIRECTION, light_dir);
-            gl.glLightf(GL.GL_LIGHT1, GL.GL_SPOT_EXPONENT, 50.0f); //0 - 128, 0 es pareja
-
+            gl.glLightf(GL.GL_LIGHT1, GL.GL_SPOT_EXPONENT, 0.0f); //0 - 128, 0 es pareja
             gl.glPopMatrix();
 
-            gl.glTranslatef(3.0f, 0.0f, 0.0f);
-            shape.glutSolidSphere(2, 10, 10);
+            gl.glPushMatrix();
+            gl.glTranslatef(0.0f, 0.0f, 0.5f);
+            float[] sombratierra = { 0.545f, 0.255f, 0.005f, 1.0f };
+            float[] luztierra = { 0.91f, 0.42f, 0.005f, 1.0f };
+            float[] reflejotierra = { 1.0f, 1.0f, 1.0f, 1.0f };
+            float[] brillotierra = { 0.0f, 0.0f, 0.0f, 1.0f };
+            float intensidadbrillotierra = 40.0f;//0 - 128
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT, sombratierra); //color a la sombra
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_DIFFUSE, luztierra); //color a la luz
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_SPECULAR, reflejotierra); //color del reflejo
+            gl.glMaterialf(GL.GL_FRONT, GL.GL_SHININESS, intensidadbrillotierra); //intensidad del reflejo
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_EMISSION, brillotierra); //color de luz emitida
+            //shape.glutSolidSphere(2, 10, 10);
+            //gl.glTranslatef(0.0f, 0.0f, -0.5f);
+            //dibuja_plano(gl, 15.0f, 0.1f);
+            gl.glPopMatrix();
 
-            trayectoria += 0.02;
-            TrenA += AnguloTan;
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_AMBIENT, sombratren); //color a la sombra
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_DIFFUSE, luztren); //color a la luz
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_SPECULAR, reflejotren); //color del reflejo
+            gl.glMaterialf(GL.GL_FRONT, GL.GL_SHININESS, intensidadbrillotren); //intensidad del reflejo
+            gl.glMaterialfv(GL.GL_FRONT, GL.GL_EMISSION, brillotren); //color de luz emitida
+            gl.glTranslatef(8.6f, 0.0f, 0.0f);
+            dibuja_arbol(gl);
+
+            trayectoria += 0.02f;
             // Forzar el dibujado de todo y cambiar el buffer de ser necesario
             gl.wglSwapBuffers(csgl12Control.GetHDC()); //Pasa del buffer a la pantalla (plancha cuando ya acabe esto) no cuando tu quieras
             //Es estoy listo cuando hagas el re-fresco para planchar en la pantalla
