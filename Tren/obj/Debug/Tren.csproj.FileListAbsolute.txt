@@ -29,3 +29,13 @@ G:\Modelos Ergonomicos\Tren\Tren\obj\Debug\Tren.csprojResolveAssemblyReference.c
 G:\Modelos Ergonomicos\Tren\Tren\obj\Debug\Tren.Form1.resources
 G:\Modelos Ergonomicos\Tren\Tren\obj\Debug\Tren.Properties.Resources.resources
 G:\Modelos Ergonomicos\Tren\Tren\obj\Debug\Tren.csproj.GenerateResource.Cache
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\obj\Debug\Tren.exe
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\obj\Debug\Tren.pdb
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\obj\Debug\Tren.csprojResolveAssemblyReference.cache
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\obj\Debug\Tren.Form1.resources
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\obj\Debug\Tren.Properties.Resources.resources
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\obj\Debug\Tren.csproj.GenerateResource.Cache
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\bin\Debug\Tren.exe
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\bin\Debug\Tren.pdb
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\bin\Debug\CSGL12Control.dll
+C:\Users\Scarlett\Documents\GitHub\Tren(Scarlett)\Tren\bin\Debug\CSGL12DLL.dll
